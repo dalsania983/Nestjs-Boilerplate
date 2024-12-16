@@ -1,14 +1,45 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+  NestMiddleware,
+} from '@nestjs/common';
+import { Observable, map } from 'rxjs';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
   use(req: any, res: any, next: () => void) {
-    console.table({
-      Status: 'Request',
-      URL: req.url,
-      Method: req.method,
-      Time: new Date().toDateString(),
-    });
+    // let request = null;
+    switch (req.method) {
+      case 'GET':
+        // request = req.query ?? req.params;
+        break;
+      default:
+        break;
+    }
+    console.log(
+      `\x1b[01m\x1b[95m[${new Date().toDateString()}] . \x1b[31m[Request] . \x1b[34m[${req.method}] . \x1b[32m[${req.url}] . \x1b[32m \x1b[0m`,
+    );
     next();
+  }
+}
+
+@Injectable()
+export class ResponseInterceptor implements NestInterceptor {
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler<any>,
+  ): Observable<any> | Promise<Observable<any>> {
+    const response = context.getArgByIndex(0);
+    console.log(
+      `\x1b[01m\x1b[95m[${new Date().toDateString()}] . \x1b[31m[Response] . \x1b[33m[${response.res.statusCode}] . \x1b[34m[${response.method}] . \x1b[32m[${response.url}]\x1b[0m`,
+    );
+    return next.handle().pipe(
+      map((data) => ({
+        success: true,
+        ...data,
+      })),
+    );
   }
 }
