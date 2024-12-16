@@ -1,0 +1,32 @@
+echo '🏗️👷 Styling, testing and building your project before committing'
+
+# Check Prettier Standards
+yarn format ||
+(
+    echo '🤢🤮🤢🤮 Your styling looks disgusting. 🤢🤮🤢🤮
+            Prettier Check Failed.';
+    false;
+)
+
+# Check ESLint Standards
+yarn lint ||
+(
+    echo '😤🏀👋😤 Get that weak s**t out of here! 😤🏀👋😤
+            ESLint Check Failed. '
+    false;
+)
+
+echo '😎😎😎... Alright... Code looks good to me... Trying to build now. 😎😎😎'
+
+
+# Create Local Build
+yarn build ||
+(
+    echo '❌👷🔨❌ Better call Bob... Because your build failed ❌👷🔨❌
+            Next build failed: View the errors above to see why.
+    '
+    false;
+)
+
+# If everything passes... Now we can commit
+echo '✅✅✅✅ You win this time... I am committing this now. ✅✅✅✅'
