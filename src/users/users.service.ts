@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 import {
   exclude,
@@ -18,7 +19,7 @@ export class UsersService {
       pageSize,
       module: prisma.users,
       args: {
-        select: exclude('Users', ['password', 'id']),
+        select: exclude('Users', ['password', 'id', 'UserToken']),
         where: {
           OR: getSearchField(
             ['first_name', 'last_name', 'email', 'phone_number'],
@@ -58,7 +59,8 @@ export class UsersService {
   }
 
   async createUser(createUserDto: CreateUserDto) {
-    const { phone_number, email } = createUserDto;
+    const { phone_number, email, password } = createUserDto;
+
     const existingUser = await prisma.users.findFirst({
       where: {
         OR: [{ phone_number }, { email }],
@@ -74,9 +76,10 @@ export class UsersService {
       };
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.users.create({
-      data: createUserDto,
-      select: exclude('Users', ['id', 'password']),
+      data: { ...createUserDto, password: hashedPassword },
+      select: exclude('Users', ['id', 'password', 'UserToken']),
     });
     if (!user) {
       throw new HttpException(

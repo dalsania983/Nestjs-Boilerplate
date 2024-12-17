@@ -2,16 +2,20 @@ import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
 
-import { AppController } from './app.controller';
-import { UsersController } from './users/users.controller';
-import { AppService } from './app.service';
-import { UsersService } from './users/users.service';
-import configuration from 'config/configuration';
 import { LoggerMiddleware } from './common/middleware/log.middleware';
+import configuration from 'config/configuration';
+
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { UsersController } from './users/users.controller';
+import { UsersService } from './users/users.service';
+import { AuthModule } from './auth/auth.module';
+import { AuthController } from './auth/auth.controller';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
+      isGlobal: true,
       envFilePath: ['.env.development', '.env.production'],
       load: [configuration],
       validationSchema: Joi.object({
@@ -26,12 +30,15 @@ import { LoggerMiddleware } from './common/middleware/log.middleware';
         abortEarly: true,
       },
     }),
+    AuthModule,
   ],
   controllers: [AppController, UsersController],
   providers: [AppService, UsersService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes(UsersController, AppController);
+    consumer
+      .apply(LoggerMiddleware)
+      .forRoutes(AuthController, UsersController, AppController);
   }
 }

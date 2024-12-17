@@ -29,7 +29,7 @@ export class UsersController {
       return res.status(HttpStatus.OK).json(result);
     } catch (error) {
       return res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .status(error.status ?? HttpStatus.INTERNAL_SERVER_ERROR)
         .json({ message: 'Internal Server Error.', error });
     }
   }
@@ -44,7 +44,7 @@ export class UsersController {
       return res.status(HttpStatus.CREATED).json(result);
     } catch (error) {
       return res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .status(error.status ?? HttpStatus.INTERNAL_SERVER_ERROR)
         .json({ message: 'Internal Server Error.', error });
     }
   }
