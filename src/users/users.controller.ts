@@ -1,3 +1,4 @@
+import { Response } from 'express';
 import {
   Body,
   Controller,
@@ -10,7 +11,6 @@ import {
 
 import { UsersService } from './users.service';
 import { CreateUserDto, GetAllUsersDto } from './users.dto';
-import { Response } from 'express';
 
 @Controller('users')
 export class UsersController {

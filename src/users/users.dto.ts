@@ -3,38 +3,44 @@ import {
   IsEmail,
   IsOptional,
   IsNotEmpty,
-  IsNumber,
+  Validate,
+  isNumber,
+  isString,
 } from 'class-validator';
 
 export class CreateUserDto {
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: 'First name must be a string.' })
+  @IsNotEmpty({ message: 'First name is required.' })
   first_name: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: 'Last name must be a string.' })
+  @IsNotEmpty({ message: 'Last name is required.' })
   last_name: string;
 
-  @IsEmail()
+  @IsEmail({}, { message: 'Invalid email format.' })
   email: string;
 
-  @IsString()
+  @IsString({ message: 'Password must be a string.' })
   @IsOptional()
   password?: string;
 
-  @IsString()
+  @IsString({ message: 'Phone number must be a string.' })
   @IsOptional()
   phone_number?: string;
 }
 
 export class GetAllUsersDto {
-  @IsNumber()
   @IsOptional()
-  page: number;
+  @Validate((value) => isNumber(value) || isString(value), {
+    message: 'page must be a string or a number.',
+  })
+  page: string | number;
 
-  @IsNumber()
   @IsOptional()
-  pageSize: number;
+  @Validate((value) => isNumber(value) || isString(value), {
+    message: 'pageSize must be a string or a number.',
+  })
+  pageSize: string | number;
 
   @IsString()
   @IsOptional()
