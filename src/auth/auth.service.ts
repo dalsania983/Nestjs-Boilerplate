@@ -34,7 +34,9 @@ export class AuthService {
         data: { access_token: token, user_id: user.uuid },
         message: 'You Successfully logged in.',
       };
-    } catch {
+    } catch (error) {
+      console.log('error', error);
+
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -75,7 +77,7 @@ export class AuthService {
   }
   async logout(token: string) {
     try {
-      await prisma.userToken.delete({ where: { token } });
+      await prisma.userToken.deleteMany({ where: { token } });
       return {
         status: HttpStatus.OK,
         error: false,

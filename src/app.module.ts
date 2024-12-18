@@ -15,8 +15,8 @@ import { AuthController } from './auth/auth.controller';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true,
       envFilePath: ['.env.development', '.env.production'],
+      isGlobal: true,
       load: [configuration],
       validationSchema: Joi.object({
         NODE_ENV: Joi.string()
@@ -24,6 +24,7 @@ import { AuthController } from './auth/auth.controller';
           .default('development'),
         PORT: Joi.number().port().default(3000),
         DATABASE_URL: Joi.string().required(),
+        JWT_SECRET: Joi.string().required(),
       }),
       validationOptions: {
         allowUnknown: true,

@@ -7,11 +7,13 @@ import {
   Ip,
   Post,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
 import { AuthService } from './auth.service';
 import { LoginDto } from './auth.dto';
+import { JwtAuthGuard } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -34,6 +36,7 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
   @Delete('logout')
   async logout(@Body() { token }: { token: string }, @Res() res: Response) {
     try {

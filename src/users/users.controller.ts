@@ -7,16 +7,19 @@ import {
   Post,
   Query,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 
 import { UsersService } from './users.service';
 import { CreateUserDto, GetAllUsersDto } from './users.dto';
+import { JwtAuthGuard } from 'src/auth/auth.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   async getAllUsers(
     @Query() getAllUsersDto: GetAllUsersDto,
     @Res() res: Response,
