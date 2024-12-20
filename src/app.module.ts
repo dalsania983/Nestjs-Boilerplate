@@ -11,6 +11,8 @@ import { UsersController } from './users/users.controller';
 import { UsersService } from './users/users.service';
 import { AuthModule } from './auth/auth.module';
 import { AuthController } from './auth/auth.controller';
+import { ApplicationLogsService } from './application-logs/application-logs.service';
+import { ApplicationLogsController } from './application-logs/application-log.controller';
 
 @Module({
   imports: [
@@ -33,8 +35,8 @@ import { AuthController } from './auth/auth.controller';
     }),
     AuthModule,
   ],
-  controllers: [AppController, UsersController],
-  providers: [AppService, UsersService],
+  controllers: [AppController, UsersController, ApplicationLogsController],
+  providers: [AppService, UsersService, ApplicationLogsService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

@@ -17,6 +17,12 @@ async function bootstrap() {
       errorHttpStatusCode: 422, // Use HTTP 422 Unprocessable Entity for validation errors
     }),
   );
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: '*',
+  });
+  app.setGlobalPrefix('api/');
   await app.listen(variables.port, () => {
     console.log(`App is listening on http://localhost:${variables.port}`);
   });

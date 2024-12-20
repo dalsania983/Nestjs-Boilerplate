@@ -8,10 +8,14 @@ import {
   getSearchField,
 } from 'src/common/helpers/db.helper';
 import { CreateUserDto, GetAllUsersDto } from './users.dto';
+import { ApplicationLogsService } from 'src/application-logs/application-logs.service';
+import { LogAction, LogModal } from 'src/common/constants/logs.constants';
 
 const prisma = new PrismaClient();
+type T = any;
 @Injectable()
 export class UsersService {
+  constructor(private applicationLogs: ApplicationLogsService) {}
   async getUsers(getAllUsersDto: GetAllUsersDto) {
     const { page, pageSize, search } = getAllUsersDto;
     const { data, pagination } = await getPagination({
@@ -19,7 +23,12 @@ export class UsersService {
       pageSize,
       module: prisma.users,
       args: {
-        select: exclude('Users', ['password', 'id', 'UserToken']),
+        select: exclude('Users', [
+          'password',
+          'id',
+          'UserToken',
+          'ApplicationLogs',
+        ]),
         where: {
           OR: getSearchField(
             ['first_name', 'last_name', 'email', 'phone_number'],
@@ -58,7 +67,11 @@ export class UsersService {
     };
   }
 
-  async createUser(createUserDto: CreateUserDto) {
+  async createUser(
+    createUserDto: CreateUserDto,
+    ip: string,
+    requesterId: string,
+  ) {
     const { phone_number, email, password } = createUserDto;
 
     const existingUser = await prisma.users.findFirst({
@@ -77,9 +90,14 @@ export class UsersService {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await prisma.users.create({
+    const user: { [x: string]: T } = await prisma.users.create({
       data: { ...createUserDto, password: hashedPassword },
-      select: exclude('Users', ['id', 'password', 'UserToken']),
+      select: exclude('Users', [
+        'id',
+        'password',
+        'UserToken',
+        'ApplicationLogs',
+      ]),
     });
     if (!user) {
       throw new HttpException(
@@ -92,6 +110,13 @@ export class UsersService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+    this.applicationLogs.createLogs({
+      user_id: requesterId,
+      action: LogAction.CREATE_USER,
+      ip,
+      message: `New User Signed Up Successfully: ${user.first_name} ${user.last_name}`,
+      module: LogModal.USER,
+    });
     return {
       status: HttpStatus.CREATED,
       error: false,
