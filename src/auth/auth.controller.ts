@@ -10,15 +10,21 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
 import { LoginDto } from './auth.dto';
 import { JwtAuthGuard } from './auth.guard';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @ApiOperation({ summary: 'User login' })
+  @ApiResponse({ status: 200, description: 'Successful login' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  @ApiBody({ type: LoginDto })
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async signIn(@Body() loginDto: LoginDto, @Ip() ip, @Res() res: Response) {
