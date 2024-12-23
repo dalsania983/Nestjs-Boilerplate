@@ -44,20 +44,15 @@ export class ApplicationLogsService {
       orderBy[sortBy] = sort;
     }
 
-    const where = {
-      user_id: userId,
-      OR: getSearchField(
-        ['first_name', 'last_name', 'email', 'phone_number'],
-        search,
-      ),
-    };
-
     const { data, pagination } = await getPagination({
       page,
       pageSize,
       module: prisma.applicationLogs,
       args: {
-        where,
+        where: {
+          user_id: userId,
+          OR: getSearchField(['action', 'module', 'message'], search),
+        },
         orderBy,
         select: exclude('ApplicationLogs', ['user_id', 'id', 'Users']),
       },

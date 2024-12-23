@@ -35,14 +35,12 @@ export class AuthService {
         message: 'You Successfully logged in.',
       };
     } catch (error) {
-      console.log('error', error);
-
       throw new HttpException(
         {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          status: error?.response?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
           error: true,
           data: null,
-          message: 'Internal Server Error',
+          message: error?.response?.message ?? 'Internal Server Error',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
@@ -54,9 +52,9 @@ export class AuthService {
       throw new HttpException(
         {
           status: HttpStatus.UNAUTHORIZED,
-          error: true,
+          error: false,
           data: null,
-          message: 'Invalid credentials',
+          message: 'You are Unauthorized to log in.',
         },
         HttpStatus.UNAUTHORIZED,
       );
@@ -66,9 +64,9 @@ export class AuthService {
       throw new HttpException(
         {
           status: HttpStatus.UNAUTHORIZED,
-          error: true,
+          error: false,
           data: null,
-          message: 'Invalid credentials',
+          message: 'You are Unauthorized to log in.',
         },
         HttpStatus.UNAUTHORIZED,
       );

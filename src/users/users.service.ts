@@ -17,54 +17,73 @@ type T = any;
 export class UsersService {
   constructor(private applicationLogs: ApplicationLogsService) {}
   async getUsers(getAllUsersDto: GetAllUsersDto) {
-    const { page, pageSize, search } = getAllUsersDto;
-    const { data, pagination } = await getPagination({
-      page,
-      pageSize,
-      module: prisma.users,
-      args: {
-        select: exclude('Users', [
-          'password',
-          'id',
-          'UserToken',
-          'ApplicationLogs',
-        ]),
-        where: {
-          OR: getSearchField(
-            ['first_name', 'last_name', 'email', 'phone_number'],
-            search,
-          ),
-        },
-      },
-    });
+    try {
+      const { page, pageSize, search, sort, sortBy } = getAllUsersDto;
 
-    if (!data) {
+      const orderBy = {};
+      if (sort && sortBy) {
+        orderBy[sortBy] = sort;
+      }
+
+      const { data, pagination } = await getPagination({
+        page,
+        pageSize,
+        module: prisma.users,
+        args: {
+          orderBy,
+          select: exclude('Users', [
+            'password',
+            'id',
+            'UserToken',
+            'ApplicationLogs',
+          ]),
+          where: {
+            OR: getSearchField(
+              ['first_name', 'last_name', 'email', 'phone_number'],
+              search,
+            ),
+          },
+        },
+      });
+
+      if (!data) {
+        throw new HttpException(
+          {
+            status: HttpStatus.INTERNAL_SERVER_ERROR,
+            error: true,
+            data: [],
+            message: 'Not able to get users list.',
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      if (data && data.length <= 0) {
+        return {
+          pagination,
+          status: HttpStatus.NOT_FOUND,
+          error: false,
+          data: [],
+          message: 'Users not found.',
+        };
+      }
+      return {
+        data,
+        pagination,
+        status: HttpStatus.OK,
+        error: false,
+        message: 'Users fetch successfully.',
+      };
+    } catch {
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: true,
           data: [],
-          message: 'Not able to get users list.',
+          message: 'Internal Server error.',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    if (data && data.length <= 0) {
-      return {
-        pagination,
-        status: HttpStatus.NOT_FOUND,
-        error: false,
-        data: [],
-        message: 'Users not found.',
-      };
-    }
-    return {
-      data,
-      pagination,
-      status: HttpStatus.OK,
-      error: false,
-      message: 'Users fetch successfully.',
-    };
   }
 
   async createUser(
@@ -72,56 +91,68 @@ export class UsersService {
     ip: string,
     requesterId: string,
   ) {
-    const { phone_number, email, password } = createUserDto;
+    try {
+      const { phone_number, email, password } = createUserDto;
 
-    const existingUser = await prisma.users.findFirst({
-      where: {
-        OR: [{ phone_number }, { email }],
-      },
-    });
+      const existingUser = await prisma.users.findFirst({
+        where: {
+          OR: [{ phone_number }, { email }],
+        },
+      });
 
-    if (existingUser) {
+      if (existingUser) {
+        return {
+          status: HttpStatus.BAD_REQUEST,
+          error: false,
+          data: null,
+          message: 'User already exist in system.',
+        };
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user: { [x: string]: T } = await prisma.users.create({
+        data: { ...createUserDto, password: hashedPassword },
+        select: exclude('Users', [
+          'id',
+          'password',
+          'UserToken',
+          'ApplicationLogs',
+        ]),
+      });
+      if (!user) {
+        throw new HttpException(
+          {
+            status: HttpStatus.INTERNAL_SERVER_ERROR,
+            error: true,
+            data: [],
+            message: 'Not able to create User.',
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      this.applicationLogs.createLogs({
+        user_id: requesterId,
+        action: LogAction.CREATE_USER,
+        ip,
+        message: `New User Signed Up Successfully: ${user.first_name} ${user.last_name}`,
+        module: LogModal.USER,
+      });
       return {
-        status: HttpStatus.BAD_REQUEST,
+        status: HttpStatus.CREATED,
         error: false,
-        data: null,
-        message: 'User already exist in system.',
+        data: user,
+        message: 'Users created successfully.',
       };
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user: { [x: string]: T } = await prisma.users.create({
-      data: { ...createUserDto, password: hashedPassword },
-      select: exclude('Users', [
-        'id',
-        'password',
-        'UserToken',
-        'ApplicationLogs',
-      ]),
-    });
-    if (!user) {
+    } catch {
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: true,
-          data: [],
-          message: 'Not able to create User.',
+          data: null,
+          message: 'Internal Server Error',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    this.applicationLogs.createLogs({
-      user_id: requesterId,
-      action: LogAction.CREATE_USER,
-      ip,
-      message: `New User Signed Up Successfully: ${user.first_name} ${user.last_name}`,
-      module: LogModal.USER,
-    });
-    return {
-      status: HttpStatus.CREATED,
-      error: false,
-      data: user,
-      message: 'Users created successfully.',
-    };
   }
 }

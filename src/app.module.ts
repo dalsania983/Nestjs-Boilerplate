@@ -16,6 +16,7 @@ import { ApplicationLogsController } from './application-logs/application-log.co
 
 @Module({
   imports: [
+    AuthModule,
     ConfigModule.forRoot({
       envFilePath: ['.env.development', '.env.production'],
       isGlobal: true,
@@ -27,13 +28,13 @@ import { ApplicationLogsController } from './application-logs/application-log.co
         PORT: Joi.number().port().default(3000),
         DATABASE_URL: Joi.string().required(),
         JWT_SECRET: Joi.string().required(),
+        ENABLE_SWAGGER: Joi.string().valid('true', 'false').required(),
       }),
       validationOptions: {
         allowUnknown: true,
         abortEarly: true,
       },
     }),
-    AuthModule,
   ],
   controllers: [AppController, UsersController, ApplicationLogsController],
   providers: [AppService, UsersService, ApplicationLogsService],

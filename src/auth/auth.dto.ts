@@ -20,3 +20,14 @@ export class LoginDto {
   @IsNotEmpty({ message: 'Password is required.' })
   password: string;
 }
+
+export class LogoutDto {
+  @ApiProperty({
+    example: 'token',
+    description: 'The token of the user',
+    default: 'token',
+  })
+  @IsString({ message: 'Token must be a string.' })
+  @IsNotEmpty({ message: 'Token is required.' })
+  token: string;
+}

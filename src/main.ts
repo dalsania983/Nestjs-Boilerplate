@@ -9,15 +9,26 @@ import { ResponseInterceptor } from './common/middleware/log.middleware';
 async function bootstrap() {
   const variables = config();
   const app = await NestFactory.create(AppModule);
-  const documentConfig = new DocumentBuilder()
-    .setTitle('Nest js Boilerplate')
-    .setDescription('The Nest js Boilerplate API description')
-    .setVersion('1.0')
-    .addTag('NestJs')
-    .build();
-  const documentFactory = () =>
-    SwaggerModule.createDocument(app, documentConfig);
 
+  if (variables.enableSwagger) {
+    const documentConfig = new DocumentBuilder()
+      .setTitle('Nest js Boilerplate')
+      .setDescription('The Nest js Boilerplate API description')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .addServer(`http://localhost:${variables.port}`, 'Local Environment')
+      .addServer('https://app.example.com', 'Staging Environment')
+      .addServer('https://dev.example.com', 'Development Environment')
+      .build();
+    const documentFactory = () =>
+      SwaggerModule.createDocument(app, documentConfig);
+    SwaggerModule.setup('swagger', app, documentFactory);
+
+    // Serve the Swagger JSON document
+    app.getHttpAdapter().get('/swagger-json', (_, res) => {
+      res.json(document);
+    });
+  }
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalPipes(
     new ValidationPipe({
@@ -33,7 +44,6 @@ async function bootstrap() {
     allowedHeaders: '*',
   });
   app.setGlobalPrefix('api/');
-  SwaggerModule.setup('swagger', app, documentFactory);
 
   await app.listen(variables.port, () => {
     console.log(`App is listening on http://localhost:${variables.port}`);
