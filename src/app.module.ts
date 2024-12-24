@@ -5,18 +5,17 @@ import * as Joi from 'joi';
 import { LoggerMiddleware } from './common/middleware/log.middleware';
 import configuration from 'config/configuration';
 
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+import { ApplicationLogsModule } from './application-logs/application-log.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UsersController } from './users/users.controller';
-import { UsersService } from './users/users.service';
-import { AuthModule } from './auth/auth.module';
-import { AuthController } from './auth/auth.controller';
-import { ApplicationLogsService } from './application-logs/application-logs.service';
-import { ApplicationLogsController } from './application-logs/application-log.controller';
 
 @Module({
   imports: [
     AuthModule,
+    UsersModule,
+    ApplicationLogsModule,
     ConfigModule.forRoot({
       envFilePath: ['.env.development', '.env.production'],
       isGlobal: true,
@@ -36,18 +35,11 @@ import { ApplicationLogsController } from './application-logs/application-log.co
       },
     }),
   ],
-  controllers: [AppController, UsersController, ApplicationLogsController],
-  providers: [AppService, UsersService, ApplicationLogsService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(LoggerMiddleware)
-      .forRoutes(
-        AuthController,
-        UsersController,
-        AppController,
-        ApplicationLogsController,
-      );
+    consumer.apply(LoggerMiddleware).forRoutes(AppController);
   }
 }

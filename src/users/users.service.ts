@@ -143,13 +143,13 @@ export class UsersService {
         data: user,
         message: 'Users created successfully.',
       };
-    } catch {
+    } catch (error) {
       throw new HttpException(
         {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          status: error?.response?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
           error: true,
           data: null,
-          message: 'Internal Server Error',
+          message: error?.response?.message ?? 'Internal Server Error',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );

@@ -1,16 +1,18 @@
 import { PrismaClient } from '@prisma/client';
+import { v4 as uuid } from 'uuid';
 const prisma = new PrismaClient();
 
 async function main() {
+  const newUserId = uuid();
   const users = await prisma.users.upsert({
-    where: { uuid: 'asdf5454545' },
+    where: { uuid: newUserId },
     update: {},
     create: {
-      uuid: 'asdf5454545',
-      first_name: 'MMM',
-      last_name: 'Dalsania',
-      email: 'dalsania@gmail.com',
-      password: 'Admin@123',
+      uuid: newUserId,
+      first_name: 'Admin',
+      last_name: 'Admin',
+      email: 'admin@gmail.com',
+      password: '$2b$10$AAXIVAmqEblNYKLRKE9nie194mzXWOGE/pZVlYOmUyuxENMKjupdG', // Admin@123
       phone_number: '+918128526089',
     },
   });

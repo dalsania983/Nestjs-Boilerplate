@@ -12,16 +12,16 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-
-import { UsersService } from './users.service';
-import { CreateUserDto, GetAllUsersDto } from './users.dto';
-import { JwtAuthGuard } from 'src/auth/auth.guard';
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+
+import { UsersService } from './users.service';
+import { CreateUserDto, GetAllUsersDto } from './users.dto';
+import { JwtAuthGuard } from 'src/auth/auth.guard';
 
 type T = any;
 @ApiTags('User')
@@ -84,11 +84,11 @@ export class UsersController {
     @Ip() ip,
   ) {
     try {
-      const { user_id }: T = req.user;
+      const { uuid }: T = req.user;
       const result = await this.usersService.createUser(
         createUserDto,
         ip,
-        user_id,
+        uuid,
       );
       if (result.error) {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(result);

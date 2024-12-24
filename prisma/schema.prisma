@@ -44,10 +44,12 @@ model ApplicationLogs {
   user_id    String
   action     String   @db.VarChar(2000)
   ip         String   @db.VarChar(100)
+  message    String   @db.Text()
   module     String?  @db.VarChar(100)
   created_at DateTime @default(now()) @db.Timestamp(0)
   updated_at DateTime @default(now()) @db.Timestamp(0)
 
-  message String @db.Text()
-  Users   Users  @relation(fields: [user_id], references: [uuid])
+  user Users @relation(fields: [user_id], references: [uuid])
+
+  @@map("ApplicationLogs")
 }
