@@ -19,14 +19,22 @@ jobs:
         with:
           node-version: 18.20.0
 
+      - name: Create .env.production
+        run: |
+          echo "NODE_ENV=production" >> .env.production
+          echo "PORT=8382" >> .env.production
+          echo "DATABASE_URL=${{ secrets.PRODUCTION_DB_URL }}" >> .env.production
+          echo "JWT_SECRET=${{ secrets.PRODUCTION_JWT_SECRET }}" >> .env.production
+          echo "ENABLE_SWAGGER=false" >> .env.production
+
       - name: Install Dependencies
         run: yarn install
 
       - name: Run Linter
         run: yarn lint
 
-      - name: Build Project
-        run: yarn build
-
       - name: Run Tests
         run: yarn test
+
+      - name: Build Project
+        run: yarn build
