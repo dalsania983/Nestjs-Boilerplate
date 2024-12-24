@@ -10,7 +10,7 @@ on:
         type: choice
         options:
           - development
-          - production
+          - main
 
 jobs:
   build-and-test:
